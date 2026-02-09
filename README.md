@@ -1,22 +1,29 @@
-# ultimate-pokedex-collection
+# Ultimate Pokédex Collection
 
-Consolidation de tous les anciens dépôts "Pokedex" (HTML/JS/React) en **une application unique** moderne.
+Industrial consolidation target for Olivier's legacy Pokédex repositories (HTML/JS/React) into a single modern app.
 
-## Objectifs
-- React + TypeScript (Vite)
-- UI propre (liste, recherche, filtres)
-- Page détail Pokémon (stats, types, évolutions)
-- Cache local
-- CI (lint/build)
+## Features (current)
+- React + TypeScript + Vite
+- Tailwind CSS (dark UI)
+- Pokédex list with pagination
+- Details page (types, abilities, base stats)
+- Data layer: Axios + TanStack Query + Zod validation
 
-## Statut
-En cours (Phase 2 consolidation). Voir `PROGRESS.md`.
+## Roadmap (Phase 2)
+- Evolution chain visualization
+- Type effectiveness calculator
+- Offline-first PWA + caching strategy
+- Unit tests (Vitest) + E2E (Playwright)
+- CI (GitHub Actions) + deployment (Vercel/Netlify)
 
-## Sources consolidées
-- Pokedex
-- pokedexDeBase
-- pokedexDeBase2
-- pokedexDeBaseFini
-- pokedexComplexe
-- pokedexReactDeBase
-- PokemonGO-Pokedex
+## Quick start
+```bash
+npm install
+npm run dev
+```
+
+## Data
+Powered by https://pokeapi.co/
+
+## License
+MIT
