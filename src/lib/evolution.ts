@@ -1,9 +1,6 @@
 import { z } from 'zod'
 
-export const NamedAPIResourceSchema = z.object({
-  name: z.string(),
-  url: z.string().url(),
-})
+import { NamedAPIResourceSchema } from './types'
 
 export const PokemonSpeciesSchema = z.object({
   id: z.number(),
