@@ -1,7 +1,12 @@
+import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
+import { EvolutionChain } from '../components/EvolutionChain'
+import { TypeEffectiveness } from '../components/TypeEffectiveness'
+import { PokemonSpeciesSchema, EvolutionChainSchema, flattenEvolutionChain } from '../lib/evolution'
 import { pokeapi } from '../lib/pokeapi'
 import { PokemonDetailsSchema } from '../lib/pokemon'
+import type { PokemonType } from '../lib/typeEffectiveness'
 
 function spriteUrl(data: ReturnType<typeof PokemonDetailsSchema.parse>) {
   return (
@@ -21,7 +26,42 @@ export function PokemonDetailsPage() {
     enabled: !!nameOrId,
   })
 
+  const speciesQuery = useQuery({
+    queryKey: ['pokemon-species', detailsQuery.data?.species.url],
+    queryFn: async () => {
+      const url = detailsQuery.data?.species.url
+      if (!url) throw new Error('missing species url')
+      const res = await pokeapi.get(url)
+      return PokemonSpeciesSchema.parse(res.data)
+    },
+    enabled: !!detailsQuery.data?.species.url,
+  })
+
+  const evolutionQuery = useQuery({
+    queryKey: ['evolution-chain', speciesQuery.data?.evolution_chain.url],
+    queryFn: async () => {
+      const url = speciesQuery.data?.evolution_chain.url
+      if (!url) throw new Error('missing evolution chain url')
+      const res = await pokeapi.get(url)
+      return EvolutionChainSchema.parse(res.data)
+    },
+    enabled: !!speciesQuery.data?.evolution_chain.url,
+  })
+
   const p = detailsQuery.data
+
+  const evoNames = useMemo(() => {
+    if (!evolutionQuery.data) return []
+    return flattenEvolutionChain(evolutionQuery.data)
+  }, [evolutionQuery.data])
+
+  const defenderTypes = useMemo(() => {
+    if (!p) return [] as PokemonType[]
+    return p.types
+      .slice()
+      .sort((a, b) => a.slot - b.slot)
+      .map((t) => t.type.name as PokemonType)
+  }, [p])
 
   return (
     <section className="space-y-4">
@@ -86,6 +126,26 @@ export function PokemonDetailsPage() {
 
           <div className="space-y-4">
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <h2 className="text-sm font-semibold">Evolution chain</h2>
+              <div className="mt-3">
+                {evolutionQuery.isLoading && (
+                  <div className="text-sm text-white/60">Loading evolution…</div>
+                )}
+                {evolutionQuery.isError && (
+                  <div className="text-sm text-white/60">Evolution data unavailable.</div>
+                )}
+                {evolutionQuery.data && <EvolutionChain names={evoNames} />}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <h2 className="text-sm font-semibold">Type effectiveness (defensive)</h2>
+              <div className="mt-3">
+                <TypeEffectiveness defenderTypes={defenderTypes} />
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
               <h2 className="text-sm font-semibold">Abilities</h2>
               <ul className="mt-2 grid gap-2 sm:grid-cols-2">
                 {p.abilities
@@ -109,7 +169,10 @@ export function PokemonDetailsPage() {
               <h2 className="text-sm font-semibold">Base stats</h2>
               <div className="mt-2 space-y-2">
                 {p.stats.map((s) => (
-                  <div key={s.stat.name} className="grid grid-cols-[120px,1fr,44px] items-center gap-3">
+                  <div
+                    key={s.stat.name}
+                    className="grid grid-cols-[120px,1fr,44px] items-center gap-3"
+                  >
                     <div className="text-xs capitalize text-white/60">{s.stat.name}</div>
                     <div className="h-2 overflow-hidden rounded bg-white/10">
                       <div
@@ -124,7 +187,7 @@ export function PokemonDetailsPage() {
             </div>
 
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/60">
-              Next: evolution chain + type effectiveness calculator (planned in consolidation backlog).
+              Next: PWA offline cache + CI + tests.
             </div>
           </div>
         </div>

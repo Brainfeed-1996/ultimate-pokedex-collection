@@ -51,6 +51,7 @@ export const PokemonDetailsSchema = z.object({
       stat: z.object({ name: z.string(), url: z.string().url() }),
     }),
   ),
+  species: z.object({ name: z.string(), url: z.string().url() }),
 })
 
 export type PokemonDetails = z.infer<typeof PokemonDetailsSchema>
