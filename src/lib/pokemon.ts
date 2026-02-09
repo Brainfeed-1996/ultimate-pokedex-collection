@@ -21,11 +21,13 @@ export const PokemonDetailsSchema = z.object({
   weight: z.number(),
   sprites: z.object({
     front_default: z.string().nullable(),
+    front_shiny: z.string().nullable().optional(),
     other: z
       .object({
         'official-artwork': z
           .object({
             front_default: z.string().nullable(),
+            front_shiny: z.string().nullable().optional(),
           })
           .optional(),
       })

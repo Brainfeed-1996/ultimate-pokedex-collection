@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
 import { EvolutionChain } from '../components/EvolutionChain'
@@ -8,7 +8,18 @@ import { pokeapi } from '../lib/pokeapi'
 import { PokemonDetailsSchema } from '../lib/pokemon'
 import type { PokemonType } from '../lib/typeEffectiveness'
 
-function spriteUrl(data: ReturnType<typeof PokemonDetailsSchema.parse>) {
+function spriteUrl(
+  data: ReturnType<typeof PokemonDetailsSchema.parse>,
+  shiny: boolean,
+): string | null {
+  if (shiny) {
+    return (
+      data.sprites.other?.['official-artwork']?.front_shiny ??
+      data.sprites.front_shiny ??
+      data.sprites.other?.['official-artwork']?.front_default ??
+      data.sprites.front_default
+    )
+  }
   return (
     data.sprites.other?.['official-artwork']?.front_default ?? data.sprites.front_default
   )
@@ -49,6 +60,7 @@ export function PokemonDetailsPage() {
   })
 
   const p = detailsQuery.data
+  const [shiny, setShiny] = useState(false)
 
   const evoNames = useMemo(() => {
     if (!evolutionQuery.data) return []
@@ -98,9 +110,9 @@ export function PokemonDetailsPage() {
             </div>
 
             <div className="mt-4 overflow-hidden rounded-xl bg-black/20">
-              {spriteUrl(p) ? (
+              {spriteUrl(p, shiny) ? (
                 <img
-                  src={spriteUrl(p) ?? undefined}
+                  src={spriteUrl(p, shiny) ?? undefined}
                   alt={p.name}
                   className="h-72 w-full object-contain"
                   loading="lazy"
@@ -110,6 +122,19 @@ export function PokemonDetailsPage() {
                   No sprite
                 </div>
               )}
+            </div>
+
+            <div className="mt-3 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => setShiny((s) => !s)}
+                className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/80 hover:border-white/20"
+              >
+                {shiny ? 'Showing shiny' : 'Showing normal'}
+              </button>
+              <div className="text-xs text-white/40">
+                Note: shiny official artwork is not always available; falls back to sprite.
+              </div>
             </div>
 
             <dl className="mt-4 grid grid-cols-2 gap-2 text-sm">
