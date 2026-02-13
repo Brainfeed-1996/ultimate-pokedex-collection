@@ -1,18 +1,42 @@
-name: ci
+name: Ultimate Pokédex CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
   pull_request:
+    branches: [main, master]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-      - run: npm ci
-      - run: npm run build
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: package-lock.json
+    
+    - name: Install dependencies
+      run: npm install
+    
+    - name: Run linter
+      run: npm run lint
+    
+    - name: Run typecheck
+      run: npm run typecheck
+    
+    - name: Run tests
+      run: npm run test
+    
+    - name: Build
+      run: npm run build
+    
+    - name: Preview build
+      run: npm run preview -- --port 4173 &
+      uses: close-issue-bot/issue-bot@latest
+      with:
+        timeout: 10000
